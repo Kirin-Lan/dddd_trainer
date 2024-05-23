@@ -7,6 +7,24 @@ import tqdm
 from configs import Config
 from loguru import logger
 
+import os
+
+
+def convert_windows_path_to_unix_style(path):
+    return path.replace("\\", "/")
+
+
+def scan_directory(directory):
+    files_list = []
+
+    for root, dirs, files in os.walk(directory):
+
+        for file in files:
+            relative_file_path = os.path.relpath(os.path.join(root, file), directory)
+            files_list.append(convert_windows_path_to_unix_style(relative_file_path))
+
+    return files_list
+
 
 class CacheData:
     def __init__(self, project_name: str):
@@ -27,7 +45,7 @@ class CacheData:
         self.bath_path = base_path
         self.allow_ext = self.conf["System"]["Allow_Ext"]
         if search_type == "name":
-            self.__get_label_from_name(base_path=base_path)
+            self.__get_label_from_name(base_path=base_path,)
         else:
             self.__get_label_from_file(base_path=base_path)
 
@@ -45,18 +63,26 @@ class CacheData:
         if not os.path.exists(images_path) or not os.path.isdir(images_path):
             logger.error("\nThe dir {} not found in path ----> {}".format(images_path, base_path))
             exit()
-        files = os.listdir(images_path)
-        logger.info("\nFiles number is {}.".format(len(files)))
+        #files = os.listdir(images_path)
+
+        files2 = scan_directory(images_path)
+        logger.info("\nFiles number is {}.".format(len(files2)))
         with open(labels_path, "r", encoding="utf-8") as f:
             labels_lines = f.readlines()
         labels_lines = [line.replace("\r", "").replace("\n", "") for line in labels_lines]
         labels_filename_lines = [line.split("\t")[0] for line in labels_lines]
         logger.info("\nLabels number is {}.".format(len(labels_lines)))
         logger.info("\nChecking labels.txt ...")
-        error_files = set(labels_filename_lines).difference(set(files))
-        logger.info("\nCheck labels.txt end! {} errors!".format(len(error_files)))
-        del files
-        self.__collect_data(labels_lines, images_path, error_files, is_file=True)
+        # 此处判断有问题，不能满足images下有目录的情况
+        #error_files = set(labels_filename_lines).difference(set(files))
+
+        error_files2 = set(labels_filename_lines).difference(set(files2))
+
+        #logger.info("\nCheck labels.txt end! {} errors!".format(len(error_files)))
+
+        logger.info("\nCheck labels.txt end! {} errors!".format(len(error_files2)))
+        del files2
+        self.__collect_data(labels_lines, images_path, error_files2, is_file=True)
 
     def __collect_data(self, lines, base_path, error_files, is_file=False):
         labels = []
