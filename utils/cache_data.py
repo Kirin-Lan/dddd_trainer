@@ -45,7 +45,7 @@ class CacheData:
         self.bath_path = base_path
         self.allow_ext = self.conf["System"]["Allow_Ext"]
         if search_type == "name":
-            self.__get_label_from_name(base_path=base_path,)
+            self.__get_label_from_name(base_path=base_path)
         else:
             self.__get_label_from_file(base_path=base_path)
 
