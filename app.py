@@ -9,6 +9,7 @@ from utils import train
 class App:
 
     def __init__(self):
+        logger.add("app.log")
         logger.info("\nHello baby~")
 
     def create(self, project_name: str, single: bool = False):
